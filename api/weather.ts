@@ -1,29 +1,17 @@
-export default async function handler(req, res) {
-  const { lat, lon, key } = req.query;
+import puppeteer from 'puppeteer';
 
-  if (!lat || !lon || !key) {
-    res.status(400).json({ error: 'Missing parameters' });
-    return;
-  }
+async function fetchVisibility() {
+  const url = 'https://weather.com/en-GB/weather/today/l/Swansea+Wales?canonicalCityId=ff9032ec7115ea0efe22f1bf42b1c36a38bdb9ecfcc98d805d74c7714fdd6ecf';
 
-  const url = `https://www.meteosource.com/api/v1/free/point?lat=${lat}&lon=${lon}&sections=current&units=metric&language=en&key=${key}`;
+  const browser = await puppeteer.launch();
+  const page = await browser.newPage();
+  await page.goto(url, { waitUntil: 'networkidle2' });
 
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      res.status(response.status).json({ error: 'Error fetching weather API' });
-      return;
-    }
-    const data = await response.json();
+  // The visibility element has data-testid="VisibilityValue"
+  const visibility = await page.$eval('span[data-testid="VisibilityValue"]', el => el.textContent);
 
-    res.setHeader('Access-Control-Allow-Origin', '*');
-
-    if (data.current && data.current.visibility !== undefined) {
-      res.status(200).json({ visibility: data.current.visibility });
-    } else {
-      res.status(200).json({ message: 'Visibility data not available' });
-    }
-  } catch (error) {
-    res.status(500).json({ error: error.message });
-  }
+  await browser.close();
+  return visibility; // e.g. "4.18 km"
 }
+
+fetchVisibility().then(console.log).catch(console.error);
