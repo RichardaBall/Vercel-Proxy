@@ -7,7 +7,7 @@ export default function VisibilityDisplay() {
   useEffect(() => {
     const lat = 51.6214;
     const lon = -3.9436;
-    const key = 'YOUR_API_KEY';
+    const key = '81a0d8bef1288c6437560f89b336dd33';
 
     fetch(`/api/weather?lat=${lat}&lon=${lon}&key=${key}`)
       .then(res => res.json())
