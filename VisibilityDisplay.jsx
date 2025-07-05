@@ -1,33 +1,34 @@
 import React, { useEffect, useState } from 'react';
 
 export default function VisibilityDisplay() {
-  const [visibility, setVisibility] = useState('Loading...');
+  const [weatherData, setWeatherData] = useState(null);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    fetch('/api/visibility')
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to fetch visibility');
-        return res.json();
-      })
+    const lat = 51.6214;
+    const lon = -3.9436;
+    const key = 'YOUR_API_KEY';
+
+    fetch(`/api/weather?lat=${lat}&lon=${lon}&key=${key}`)
+      .then(res => res.json())
       .then(data => {
-        if (data.visibility) {
-          setVisibility(data.visibility);
+        if(data.error) {
+          setError(data.error);
         } else {
-          setVisibility('Visibility data not found');
+          setWeatherData(data);
         }
       })
-      .catch(err => {
-        setError(err.message);
-      });
+      .catch(() => setError('Failed to fetch weather data'));
   }, []);
 
-  if (error) return <div style={{color: 'red'}}>Error: {error}</div>;
+  if(error) return <div>Error: {error}</div>;
+  if(!weatherData) return <div>Loading...</div>;
 
   return (
     <div>
-      <h2>Current Visibility in Swansea</h2>
-      <p>{visibility}</p>
+      <h1>Current Weather</h1>
+      <p>Temperature: {weatherData.current.temperature} °C</p>
+      <p>Visibility: {weatherData.current.visibility ?? 'N/A'}</p>
     </div>
   );
 }
